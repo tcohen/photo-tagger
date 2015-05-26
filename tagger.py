@@ -1,9 +1,19 @@
+#!/usr/bin/python
+
 import os
 import os.path
 import ConfigParser
 
 import sys
 import pygame
+
+#defs
+screen_size = screen_width, screen_height = 1600,900
+screen_half_width = screen_width / 2
+border = 10
+black = 0,0,0
+white = 255,255,255
+font_size = 20
 
 def run():
 
@@ -31,14 +41,19 @@ def run():
 
     #pygame
     pygame.init()
-    size = width, height = 800, 600
-    speed = [4, 4]
-    white = 255, 255, 255
-    screen = pygame.display.set_mode(size)
+    screen = pygame.display.set_mode(screen_size)
+
+    pygame.font.init()
+    font_filename = pygame.font.get_default_font()
+    font = pygame.font.Font(font_filename, font_size)
+    help_text = font.render("J/K Back & Forth, G# Go, 1..0 Tag", True, white, black)
 
     source_tag_file = open(source_tag_filename, "r")
 
+    line_number = 0
     for line in source_tag_file:
+
+        line_number = line_number + 1
 
         line = line.strip()
 
@@ -48,26 +63,47 @@ def run():
         photo_filename = os.path.join(root_dir, line)
         print "  " + photo_filename
 
-        ball = pygame.image.load(photo_filename)
-        ball = pygame.transform.scale(ball, (100, 100))
-        ballrect = ball.get_rect()
+        photo = pygame.image.load(photo_filename)
+        photo = pygame.transform.scale(photo, (200, 200))
 
-        while 1:
+        back = forth = False
+        mainLoop = True
+        while mainLoop:
+
             for event in pygame.event.get():
+
                 if event.type == pygame.QUIT:
+                    mainLoop = False
                     break
 
-            ballrect = ballrect.move(speed)
-            if ballrect.left < 0 or ballrect.right > width:
-                speed[0] = -speed[0]
-            if ballrect.top < 0 or ballrect.bottom > height:
-                speed[1] = -speed[1]
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_k:
+                        forth = True
+                        break
 
-            screen.fill(white)
-            screen.blit(ball, ballrect)
+            if back or forth:
+                break
+
+            screen.fill(black)
+
+            #draw images
+
+            temp_image_location = (screen_half_width - 100, screen_size[1] - 200 - border)
+            screen.blit(photo, temp_image_location)
+
+            #draw text
+
+            help_text_location = ((screen_size[0] - help_text.get_width() - border),    border * 1 + font_size * 0)
+            screen.blit(help_text, help_text_location)
+
+            line_number_text = font.render("Line " + str(line_number) + ": " + line, False, white, black)
+            line_number_location = ((screen_size[0] - help_text.get_width() - border),  border * 2 + font_size * 1)
+            screen.blit(line_number_text, line_number_location)
+
             pygame.display.flip()
 
-        break
+        if not mainLoop:
+            break;
 
     source_tag_file.close()
     sdl2.ext.quit()
