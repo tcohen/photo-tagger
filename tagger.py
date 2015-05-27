@@ -8,12 +8,37 @@ import sys
 import pygame
 
 #defs
-screen_size = screen_width, screen_height = 1600,900
+screen_size = screen_width, screen_height = 1920,1080
 screen_half_width = screen_width / 2
 border = 10
 black = 0,0,0
 white = 255,255,255
 font_size = 20
+
+focal_image_size = 600
+num_back_images = 6
+num_fore_images = 6
+
+def constrain_image_to_square(image, square_dim):
+
+    size = image.get_size()
+
+    n = 0
+    new_size = (0,0)
+    if size[0] > size[1]:   #width is the greater dimension
+        
+        # w/h = square_dim/n, n = square_dim * h / w
+
+        n = square_dim * size[1] / size[0]
+        new_size = (square_dim, n)
+
+    else:                   #height is the greater dimension
+
+        # w/h = n/square_dim, n = square_dim * w / h
+        n = square_dim * size[0] / size[1]
+        new_size = (n, square_dim)
+
+    return pygame.transform.scale(image, new_size)
 
 def run():
 
@@ -64,7 +89,12 @@ def run():
         print "  " + photo_filename
 
         photo = pygame.image.load(photo_filename)
-        photo = pygame.transform.scale(photo, (200, 200))
+        photo = constrain_image_to_square(photo, focal_image_size)
+
+        #main loop
+
+        back_images = []
+        forth_images = []
 
         back = forth = False
         mainLoop = True
@@ -77,6 +107,10 @@ def run():
                     break
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        mainLoop = False
+                        break
+
                     if event.key == pygame.K_k:
                         forth = True
                         break
@@ -88,8 +122,8 @@ def run():
 
             #draw images
 
-            temp_image_location = (screen_half_width - 100, screen_size[1] - 200 - border)
-            screen.blit(photo, temp_image_location)
+            focal_image_location = (screen_half_width - focal_image_size * 0.5, screen_size[1] - focal_image_size - border)
+            screen.blit(photo, focal_image_location)
 
             #draw text
 
@@ -106,7 +140,8 @@ def run():
             break;
 
     source_tag_file.close()
-    sdl2.ext.quit()
+
+    pygame.quit()
 
     return True
 
