@@ -55,7 +55,8 @@ def copy_tagged_files(tag, root_dir, tags_dir, target_dir):
         if not os.path.exists(full_target_dir):
             os.makedirs(full_target_dir)
 
-        shutil.copy(source_filename, target_filename)
+        if not os.path.isfile(target_filename):
+            shutil.copy(source_filename, target_filename)
 
     return True
 
